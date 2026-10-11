@@ -1,9 +1,36 @@
-# Modlumi plugins
+<p align="center">
+  <a href="https://modlumi.com">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset=".github/modlumi-logo-on-dark.svg">
+      <img src=".github/modlumi-logo-on-light.svg" alt="Modlumi" width="360">
+    </picture>
+  </a>
+</p>
 
-The source of the plugins that come with [Modlumi](https://modlumi.com), a 3D
-modeling app, and of its example plugins. They're complete, working plugins
-written with Modlumi's JavaScript plugin API, so they're a good place to learn
-how to build your own.
+<h3 align="center">Plugins for Modlumi</h3>
+
+<p align="center">
+  The source of the plugins that come with <a href="https://modlumi.com">Modlumi</a>, a 3D modeling app,<br>
+  and of its example plugins: complete, working code to learn the JavaScript plugin API from.
+</p>
+
+<p align="center">
+  <a href="https://modlumi.com"><img src="https://img.shields.io/badge/Modlumi-0.12-FF9307?labelColor=121619" alt="Modlumi 0.12"></a>
+  <a href="https://modlumi.com/docs/guides/writing-a-plugin/"><img src="https://img.shields.io/badge/docs-writing_a_plugin-FF9307?labelColor=121619" alt="Docs: Writing a plugin"></a>
+  <a href="https://modlumi.com/docs/api/modlumi/"><img src="https://img.shields.io/badge/API-reference-FF9307?labelColor=121619" alt="API reference"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-FF9307?labelColor=121619" alt="MIT license"></a>
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><a href="https://modlumi.com/docs/user-guide/plugins/#true-bend"><img src="https://modlumi.com/media/plugin-true-bend-d960f362.gif" alt="True Bend bends a slat with a live preview."></a><br><b>True Bend</b>: a tool with a live preview</td>
+    <td width="50%"><a href="https://modlumi.com/docs/user-guide/plugins/#solid-inspector"><img src="https://modlumi.com/media/plugin-solid-inspector-60cb5b5f.gif" alt="Solid Inspector finds and fixes the problems in a cabinet."></a><br><b>Solid Inspector</b>: find and fix what isn't solid</td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="https://modlumi.com/docs/user-guide/plugins/#shapes"><img src="https://modlumi.com/media/plugin-shapes-863f080c.gif" alt="Shapes adds a helical ramp from a dialog."></a><br><b>Shapes</b>: parametric objects from a dialog</td>
+    <td width="50%"><a href="https://modlumi.com/docs/user-guide/plugins/#levels"><img src="https://modlumi.com/media/plugin-levels-2f842454.gif" alt="Levels draws a building's floor levels in an elevation."></a><br><b>Levels</b>: a panel, an overlay and snapping</td>
+  </tr>
+</table>
 
 This copy matches Modlumi 0.12. It's exported from the Modlumi source
 with each release, so changes made here directly are overwritten; please open
