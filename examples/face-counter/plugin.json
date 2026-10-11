@@ -1,0 +1,9 @@
+{
+  "id": "face-counter",
+  "name": "Face Counter",
+  "version": "1.0.0",
+  "description": "Counts the faces you select and keeps a running total in the model.",
+  "author": "Modlumi example",
+  "license": "MIT",
+  "apiVersion": 1
+}

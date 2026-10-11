@@ -1,0 +1,9 @@
+{
+  "id": "solid-inspector",
+  "name": "Solid Inspector",
+  "version": "1.0.0",
+  "description": "Finds what keeps a group or component from being a solid, such as holes, stray edges, internal faces and reversed faces, shows each in the model and fixes what can be fixed in one undo step.",
+  "author": "Modlumi, after Solid Inspector² by Thomas Thomassen",
+  "license": "MIT",
+  "apiVersion": 1
+}

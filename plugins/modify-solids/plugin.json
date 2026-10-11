@@ -1,0 +1,9 @@
+{
+  "id": "modify-solids",
+  "name": "Modify Solids",
+  "version": "1.0.0",
+  "description": "Unites, subtracts, trims and intersects solids in place, keeping their names, paint and placement.",
+  "author": "Modlumi, after Eneroth Solid Tools by Julia Christina Eneroth",
+  "license": "MIT",
+  "apiVersion": 1
+}

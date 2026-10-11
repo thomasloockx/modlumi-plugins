@@ -1,0 +1,12 @@
+{
+  "id": "csv-report",
+  "name": "CSV Report",
+  "version": "1.0.0",
+  "description": "Writes a spreadsheet of the model's groups and components, with their faces and areas, to a file you choose.",
+  "author": "Modlumi example",
+  "license": "MIT",
+  "apiVersion": 1,
+  "permissions": {
+    "files.dialog": true
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "id": "select-similar",
+  "name": "Select Similar",
+  "version": "1.0.0",
+  "description": "Grows or filters the selection by plane, direction, material or type.",
+  "author": "Modlumi",
+  "license": "MIT",
+  "apiVersion": 1
+}

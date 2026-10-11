@@ -1,0 +1,9 @@
+{
+  "id": "levels",
+  "name": "Levels",
+  "version": "1.0.0",
+  "description": "Keeps a building's levels in the model, draws them as dashed lines in elevations and sections, and snaps the cursor to their heights.",
+  "author": "Modlumi",
+  "license": "MIT",
+  "apiVersion": 1
+}

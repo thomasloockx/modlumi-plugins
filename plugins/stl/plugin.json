@@ -1,0 +1,9 @@
+{
+  "id": "stl",
+  "name": "STL",
+  "version": "1.0.0",
+  "description": "Imports and exports STL models, ASCII and binary, for 3D printing and other tools.",
+  "author": "Modlumi, after sketchup-stl by Trimble Navigation and its contributors",
+  "license": "MIT",
+  "apiVersion": 1
+}

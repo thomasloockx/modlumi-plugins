@@ -1,0 +1,9 @@
+{
+  "id": "widget-gallery",
+  "name": "Widget Gallery",
+  "version": "1.0.0",
+  "description": "Shows every widget a plugin panel can use.",
+  "author": "Modlumi example",
+  "license": "MIT",
+  "apiVersion": 1
+}

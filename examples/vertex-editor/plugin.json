@@ -1,0 +1,9 @@
+{
+  "id": "vertex-editor",
+  "name": "Vertex Editor",
+  "version": "1.0.0",
+  "description": "A tool that moves single vertices, with inference, axis locks and typed distances.",
+  "author": "Modlumi example",
+  "license": "MIT",
+  "apiVersion": 1
+}

@@ -1,0 +1,9 @@
+{
+  "id": "cleanup",
+  "name": "Clean Up",
+  "version": "1.0.0",
+  "description": "Purges unused components and materials, merges coplanar faces and identical materials, repairs split edges, erases stray edges and hidden geometry, and smooths edges.",
+  "author": "Modlumi, after CleanUp by Thomas Thomassen",
+  "license": "MIT",
+  "apiVersion": 1
+}

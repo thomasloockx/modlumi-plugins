@@ -1,0 +1,9 @@
+{
+  "id": "obj",
+  "name": "OBJ",
+  "version": "1.0.0",
+  "description": "Imports and exports Wavefront OBJ models, with their objects as groups.",
+  "author": "Modlumi",
+  "license": "MIT",
+  "apiVersion": 1
+}

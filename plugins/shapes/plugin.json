@@ -1,0 +1,9 @@
+{
+  "id": "shapes",
+  "name": "Shapes",
+  "version": "1.0.0",
+  "description": "Adds boxes, cylinders, cones, tori, tubes, prisms, pyramids, domes, spheres, helices and helical ramps from parameter dialogs, editable later in Properties.",
+  "author": "Modlumi, after the Shapes extension by Trimble",
+  "license": "MIT",
+  "apiVersion": 1
+}

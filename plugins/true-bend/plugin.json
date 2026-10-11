@@ -1,0 +1,9 @@
+{
+  "id": "true-bend",
+  "name": "True Bend",
+  "version": "1.0.0",
+  "description": "Bends a group or component to a typed angle or a dragged amount, along a true or segmented curve, with a live preview.",
+  "author": "Modlumi, after True Bend by Thomas Thomassen",
+  "license": "MIT",
+  "apiVersion": 1
+}

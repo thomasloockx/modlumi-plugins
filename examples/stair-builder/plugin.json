@@ -1,0 +1,9 @@
+{
+  "id": "stair-builder",
+  "name": "Stair Builder",
+  "version": "1.0.0",
+  "description": "Builds straight stairs from a parameter panel.",
+  "author": "Modlumi example",
+  "license": "MIT",
+  "apiVersion": 1
+}

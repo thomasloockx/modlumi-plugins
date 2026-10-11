@@ -1,0 +1,9 @@
+{
+  "id": "face-area",
+  "name": "Face Area",
+  "version": "1.0.0",
+  "description": "Totals the area of the selected faces in the model's units.",
+  "author": "Modlumi, after Eneroth Face Area Counter by Julia Christina Eneroth",
+  "license": "MIT",
+  "apiVersion": 1
+}
