@@ -59,6 +59,21 @@ What each built-in plugin does, with a short video, is on the
 [Plugins](https://modlumi.com/docs/user-guide/plugins/) page. To write your own,
 start with [Writing a plugin](https://modlumi.com/docs/guides/writing-a-plugin/).
 
+## Installing an example
+
+The plugins in `plugins/` already come with Modlumi. To install one of the
+`examples/`:
+
+1. Click **Code → Download ZIP** on this page and unzip it. The zip holds
+   several plugins, so Modlumi can't install it as it is.
+2. In Modlumi, choose **Extensions → Manage Extensions... → Install plugin...**
+   and pick the example's `plugin.json`, such as
+   `examples/face-counter/plugin.json`.
+
+Pick a `plugin.json` only inside its own plugin's folder: Modlumi installs every
+file in that folder. See
+[Install a plugin from GitHub](https://modlumi.com/docs/user-guide/plugins/#install-a-plugin-from-github).
+
 ## Trying a change
 
 The plugins in `plugins/` already come with Modlumi. To experiment with one,
