@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <a href="https://modlumi.com"><img src="https://img.shields.io/badge/Modlumi-0.12-FF9307?labelColor=121619" alt="Modlumi 0.12"></a>
+  <a href="https://modlumi.com"><img src="https://img.shields.io/badge/Modlumi-0.16-FF9307?labelColor=121619" alt="Modlumi 0.16"></a>
   <a href="https://modlumi.com/docs/guides/writing-a-plugin/"><img src="https://img.shields.io/badge/docs-writing_a_plugin-FF9307?labelColor=121619" alt="Docs: Writing a plugin"></a>
   <a href="https://modlumi.com/docs/api/modlumi/"><img src="https://img.shields.io/badge/API-reference-FF9307?labelColor=121619" alt="API reference"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-FF9307?labelColor=121619" alt="MIT license"></a>
@@ -32,7 +32,7 @@
   </tr>
 </table>
 
-This copy matches Modlumi 0.12. It's exported from the Modlumi source
+This copy matches Modlumi 0.16. It's exported from the Modlumi source
 with each release, so changes made here directly are overwritten; please open
 an issue instead.
 
@@ -49,6 +49,7 @@ an issue instead.
 | `plugins/levels` | Levels | Document data, a panel, a viewport overlay, pickable items and a snap provider. |
 | `plugins/solid-inspector` | Solid Inspector | A tool that highlights problems, steps the camera to each one and fixes them. |
 | `plugins/true-bend` | True Bend | A tool with a live preview, typed values, keyboard input and options. |
+| `plugins/rail-sweep` | Rail Sweep | A tool that picks faces and edge chains in turn and builds a solid from a `MeshBuilder`. |
 | `examples/face-counter` | Face Counter | Commands with an icon, a shortcut, enabled and checked states, and data kept in the model. |
 | `examples/stair-builder` | Stair Builder | A panel of parameters and an editable object rebuilt from Properties. |
 | `examples/csv-report` | CSV Report | Writing a file the user picks. |

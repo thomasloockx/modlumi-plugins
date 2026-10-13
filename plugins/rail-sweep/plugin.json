@@ -1,0 +1,9 @@
+{
+  "id": "rail-sweep",
+  "name": "Rail Sweep",
+  "version": "1.0.0",
+  "description": "Sweeps a surface between a start and an end profile along two rails, which set where each section sits, how it turns and how wide it is, with a live preview.",
+  "author": "Modlumi",
+  "license": "MIT",
+  "apiVersion": 1
+}

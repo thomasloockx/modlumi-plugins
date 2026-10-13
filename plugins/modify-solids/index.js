@@ -55,6 +55,9 @@ function isSolid(element) {
  */
 let solidity;
 
+/** @type {Solid[] | undefined} */
+let selectedSolids;
+
 /**
  * Runs a read-only check with solidity kept until the current run's code finishes.
  * @param {() => boolean} check
@@ -64,6 +67,7 @@ function withSolidity(check) {
     solidity = new WeakMap();
     Promise.resolve().then(() => {
       solidity = undefined;
+      selectedSolids = undefined;
     });
   }
   return check();
@@ -71,18 +75,26 @@ function withSolidity(check) {
 
 // Returns the marked modifiers that still exist and belong to the context being edited.
 function liveModifiers() {
+  if (modifiers.length === 0) {
+    return modifiers;
+  }
   const entities = modlumi.activeModel.activeEntities.toArray();
   modifiers = modifiers.filter((modifier) => modifier.isValid && entities.includes(modifier));
   return modifiers;
 }
 
+// Reuse the selection snapshot across the commands' read-only checks in this run.
+function selectedSolidEntities() {
+  if (solidity === undefined) {
+    return modlumi.activeModel.selection.toArray().filter(isSolid);
+  }
+  return selectedSolids ??= modlumi.activeModel.selection.toArray().filter(isSolid);
+}
+
 // Returns the selected solids that aren't marked as modifiers.
 function selectedTargets() {
   const marked = liveModifiers();
-  return modlumi.activeModel.selection
-    .toArray()
-    .filter(isSolid)
-    .filter((solid) => !marked.includes(solid));
+  return selectedSolidEntities().filter((solid) => !marked.includes(solid));
 }
 
 /**
@@ -118,7 +130,7 @@ export function activate(context) {
     tip: "Remembers the selected solids as the modifiers the other commands change targets with.",
     when: "selection",
     contextMenu: true,
-    isEnabled: () => withSolidity(() => modlumi.activeModel.selection.toArray().some(isSolid)),
+    isEnabled: () => withSolidity(() => selectedSolidEntities().length > 0),
     run() {
       modifiers = modlumi.activeModel.selection.toArray().filter(isSolid);
       context.showMessage(`Marked ${plural(modifiers.length, "modifier")}. Now select the targets.`);

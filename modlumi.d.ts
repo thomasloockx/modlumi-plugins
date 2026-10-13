@@ -789,7 +789,8 @@ declare namespace modlumi {
     /**
      * Erases several edges at once and heals the faces around them. Erasing any edge of a curve
      * erases the whole curve. Collinear edges left meeting at an erased edge's end that nothing
-     * else reaches are joined into one, as after erasing a line drawn across a face.
+     * else reaches are joined into one, as after erasing a line drawn across a face, and an erased
+     * edge's end that no edge reaches any more is removed.
      */
     eraseEdges(edges: Iterable<Edge>): void;
     /**
@@ -1050,6 +1051,13 @@ declare namespace modlumi {
      * inside an operation. A thrown error, or any failed edit inside `body` (even when
      * caught), rolls the whole operation back. Empty operations add no undo step.
      * Operations can't be nested, and `body` must be synchronous.
+     *
+     * In a panel's, dialog's or Properties section's draw, the operations that apply changes
+     * the user makes while holding one widget, such as dragging a slider or typing into a text
+     * field, join one undo step: the first operation of the drag names it, and later ones
+     * add to it, so one undo goes back to before the drag. Releasing the widget, or changing
+     * another one, starts a new step, as does anything else that changes the model in between,
+     * such as an undo during the drag.
      */
     operation<T>(name: string, body: () => T): T;
     /** Undoes the last operation. Not allowed inside an operation. */
@@ -1076,6 +1084,13 @@ declare namespace modlumi {
      * show their default or inherited appearance again.
      */
     removeMaterial(material: Material): void;
+    /**
+     * Returns the first material named `name`, or `null`. Names needn't be unique, so plugins that
+     * add materials by name look them up first:
+     * `model.getMaterial("Oak") ?? model.addMaterial("Oak", { color })`. Needs the
+     * `"materialLookup"` feature.
+     */
+    getMaterial(name: string): Material | null;
     /** Formats a length in meters the way the model shows lengths, such as `"1.200 m"`. */
     formatLength(meters: number): string;
     /** Formats an area in square meters in the model's units, such as `"6.000 m²"`. */
@@ -1160,7 +1175,7 @@ declare namespace modlumi {
     /** Ctrl, or Cmd on macOS. */
     readonly ctrl: boolean;
     readonly alt: boolean;
-    /** For key events: a letter, `"enter"`, `"backspace"`, `"escape"`, `"space"`, an arrow such as `"left"`, or a modifier. */
+    /** For key events: which key, as {@link ToolDefinition.onKeyDown} lists. */
     readonly key: string | null;
     readonly repeat: boolean;
     /** For `"value"`: what the user typed in the measurement box. */
@@ -1190,7 +1205,12 @@ declare namespace modlumi {
     screen?: boolean;
   }
 
-  /** What a tool's draw function draws its preview with. */
+  /**
+   * What a tool's draw function and overlays draw with. A tool's draw takes points in the
+   * coordinates of the context being edited, like its events' {@link ToolPoint.position}, and
+   * Modlumi maps them to the model. Overlays from {@link PluginContext.addOverlay} take model
+   * coordinates. Either takes screen pixels instead with `screen: true`.
+   */
   interface ToolView {
     /** Separate segments, one from each pair of points. */
     lines(points: Iterable<Point3dLike | readonly [number, number]>, style?: PreviewStyle): void;
@@ -1200,6 +1220,15 @@ declare namespace modlumi {
     points(points: Iterable<Point3dLike | readonly [number, number]>, style?: PreviewStyle): void;
     /** Text at a point, or at screen pixels. */
     text(position: Point3dLike | readonly [number, number], text: unknown, style?: PreviewStyle): void;
+    /**
+     * The twelve edges of a box with one corner at `origin` and `size` along X, Y and Z, placed by
+     * `transformation` when given, such as a group's. Needs the `"previewBoxes"` feature.
+     */
+    box(
+      origin: Point3dLike,
+      size: Vector3dLike,
+      style?: Omit<PreviewStyle, "screen"> & { transformation?: Transformation },
+    ): void;
     /**
      * An image stretched over four corners: its top left, top right, bottom right and bottom
      * left. In model coordinates the image bends with the perspective; with `screen: true` the
@@ -1278,6 +1307,18 @@ declare namespace modlumi {
     onMouseDown?(event: ToolEvent): void;
     onMouseUp?(event: ToolEvent): void;
     onDoubleClick?(event: ToolEvent): void;
+    /**
+     * A key went down while the tool is selected. Its `key` is a letter from `"a"` to `"z"`, `"+"`,
+     * `"-"`, `"escape"`, `"enter"`, `"backspace"`, `"space"`, an arrow such as `"left"`, a
+     * modifier, or `"unknown"` for other keys. A letter pressed on its own that is a tool's
+     * shortcut, such as `r` for Rectangle, selects that tool, and `g` makes a component, so neither
+     * reaches the tool; `d`, `i`, `j`, `k`, `n`, `u`, `v`, `w` and `x` do, and so does a letter
+     * pressed with Shift or Alt, except Shift+Z, which zooms to the whole model. Digits and the
+     * other characters of a typed value go to the measurement box instead, and so do Enter and
+     * Backspace while a value is being typed. While the tool snaps, the arrow
+     * keys lock axes and Shift locks the current inference rather than reaching the tool; with
+     * `snap: false` they reach it.
+     */
     onKeyDown?(event: ToolEvent): void;
     onKeyUp?(event: ToolEvent): void;
     /**
@@ -1292,7 +1333,11 @@ declare namespace modlumi {
      * Tools that only pick what is under the pointer turn it off, and their events have no `point`.
      */
     snap?: boolean;
-    /** Describes the preview drawn over the model. */
+    /**
+     * Describes the preview drawn over the model, in the coordinates of the context being edited.
+     * It only reads, and can't select tools, nor can the promise callbacks and `await`s it
+     * starts.
+     */
     draw?(view: ToolView): void;
     /**
      * Draws the tool's options, in a card over the top left of the viewport while the tool is
@@ -1315,6 +1360,13 @@ declare namespace modlumi {
      * arrow keys lock those axes.
      */
     reference: Point3d | null;
+    /**
+     * Selects the tool, as choosing it from the Extensions menu does, such as from a panel's
+     * button that starts placing what the panel set up. The tool changes once the plugin's code
+     * for this frame has run. Listeners, `isEnabled`, `isChecked` and draws that only read can't
+     * select tools. Needs the `"toolSelection"` feature.
+     */
+    select(): void;
   }
 
   /** A command a plugin adds to Modlumi's menus. See {@link PluginContext.registerCommand}. */
@@ -1370,8 +1422,9 @@ declare namespace modlumi {
 
   /**
    * A function a plugin's change listener runs. It may be async, but its promises must settle
-   * during the run: only a command's run can wait for {@link PluginContext.fetch} or a file
-   * dialog.
+   * during the run: only a command's run can await {@link PluginContext.fetch} or a file
+   * dialog. Other code, such as a panel's button, starts one without awaiting it; see
+   * {@link PluginFiles}.
    */
   type ChangeListener = () => void | Promise<void>;
 
@@ -1384,7 +1437,51 @@ declare namespace modlumi {
     | "network"
     | "faceEdgeData"
     | "mergeVertices"
-    | "edgeMaterials";
+    | "edgeMaterials"
+    | "toolSelection"
+    | "propertiesWhen"
+    | "previewBoxes"
+    | "materialLookup"
+    | "formValidation"
+    | "listWidget"
+    | "locale"
+    | "numberFormat"
+    | "tableActivation"
+    | "skpAttributes";
+
+  /** How the user's regional settings write numbers, from {@link PluginContext.numberFormat}. */
+  interface NumberFormat {
+    /** Separates a number's whole part from its fraction, such as `"."` or `","`. */
+    readonly decimal: string;
+    /**
+     * Separates digit groups, such as `","`, `"."` or a narrow space; empty when the user's
+     * settings don't group digits.
+     */
+    readonly group: string;
+    /**
+     * The sizes of the digit groups, from the decimal mark leftwards: `[3]` for `1,234,567` and
+     * `[3, 2]` for India's `12,34,567`. The last size repeats unless
+     * {@link NumberFormat.groupingRepeats} is `false`. Empty when the user's settings don't group
+     * digits.
+     */
+    readonly grouping: readonly number[];
+    /**
+     * Whether the last size in {@link NumberFormat.grouping} repeats for the rest of the digits,
+     * as it does for almost every region. When `false`, as some Windows and POSIX settings ask,
+     * the digits left of the listed groups stay together: `[3]` writes `1234,567`.
+     */
+    readonly groupingRepeats: boolean;
+    /** Separates list items, such as CSV columns spreadsheets read: `","` or `";"`. */
+    readonly list: string;
+  }
+
+  /** Options of {@link PluginContext.formatNumber}. */
+  interface FormatNumberOptions {
+    /** Digits after the decimal mark, from 0 to 20; as many as the number needs by default. */
+    decimals?: number;
+    /** Whether to separate digit groups as {@link NumberFormat.grouping} sizes them; `true` by default. */
+    grouping?: boolean;
+  }
 
   /**
    * A plugin's settings for the current user, such as preferences, kept outside models.
@@ -1438,6 +1535,11 @@ declare namespace modlumi {
     tip?: string;
     /** Shows the widget grayed out; it ignores the user. */
     disabled?: boolean;
+    /**
+     * Why the field's value is wrong, shown under it in red; empty or absent for none. See
+     * {@link Ui.form} for forms that keep refused input. Needs the `"formValidation"` feature.
+     */
+    error?: string | null;
   }
 
   /** Accepted range of a numeric field, in the field's own units: meters, radians or plain numbers. */
@@ -1504,6 +1606,13 @@ declare namespace modlumi {
   interface TableOptions extends WidgetOptions {
     /** Rows visible before the table scrolls; 10 by default. */
     visibleRows?: number;
+    /**
+     * Called with a row's id when the user double-clicks the row, such as to zoom to what it
+     * lists. It runs during the draw that reports the double-click, after the click selected the
+     * row, so it may edit the model inside {@link Model.operation} like a clicked button. Needs
+     * the `"tableActivation"` feature.
+     */
+    onActivate?(id: string): void;
   }
 
   /**
@@ -1667,6 +1776,33 @@ declare namespace modlumi {
     progress(fraction: number, options?: WidgetOptions & { text?: string }): void;
     /** A heading that folds the widgets `draw` adds; open by default. */
     section(title: string, draw: () => void, options?: WidgetOptions & { open?: boolean }): void;
+    /**
+     * A folding list of items of any length, such as a worktop's cutouts: `drawItem` draws each
+     * item's widgets and returns the item, changed where the user edited it. With `remove`, each
+     * item has a button that removes it; with `add`, a button at the end adds what `add` returns.
+     * Returns the new items. Items' widgets are keyed by their index, or by `key` when items can
+     * move. Needs the `"listWidget"` feature.
+     *
+     * ```js
+     * cutouts = ui.list("Cutouts", cutouts, (cut) => ({ ...cut, width: ui.length("Width", cut.width) }), {
+     *   add: () => ({ width: 0.6 }),
+     *   remove: true,
+     * });
+     * ```
+     */
+    list<T>(
+      label: string,
+      items: readonly T[],
+      drawItem: (item: T, index: number) => T,
+      options?: WidgetOptions & {
+        add?: () => T;
+        remove?: boolean;
+        key?: (item: T, index: number) => string | number;
+        addLabel?: string;
+        removeLabel?: string;
+        open?: boolean;
+      },
+    ): T[];
     /** Places the widgets `draw` adds side by side, such as a row of buttons. */
     row(draw: () => void, options?: WidgetOptions): void;
     /** Equal-width columns, one per function. */
@@ -1685,8 +1821,27 @@ declare namespace modlumi {
      *   shape: { type: "dropdown", label: "Shape", choices: ["Straight", "L-shaped"] },
      * });
      * ```
+     *
+     * With `validate`, a change goes through only when `validate` reports no errors. Otherwise the
+     * form keeps showing what the user entered, with each message under its field, and returns
+     * `values` unchanged, until the user fixes it or `values` changes. `validate` receives the
+     * changed values and returns messages by field key; a message for a key that isn't a field
+     * shows under the form. It runs only after a change, and only reads, even in a draw that may
+     * edit: changing the model, the selection or the tool from it, or from the promise callbacks
+     * and `await`s it starts, even once code that may edit settles their promises, throws
+     * {@link ModelError}. Needs the `"formValidation"` feature.
+     *
+     * ```js
+     * cabinet = ui.form(cabinet, schema, {
+     *   validate: (c) => (c.width <= 2 * c.thickness ? { width: "Too narrow for its side panels" } : null),
+     * });
+     * ```
      */
-    form<T extends Record<string, unknown>>(values: T, schema: Readonly<Record<string, FormField>>): T;
+    form<T extends Record<string, unknown>>(
+      values: T,
+      schema: Readonly<Record<string, FormField>>,
+      options?: { validate?(values: T): Readonly<Record<string, string | null | undefined>> | null | undefined },
+    ): T;
     /** Closes this panel or dialog. */
     close(): void;
   }
@@ -1701,7 +1856,10 @@ declare namespace modlumi {
 
   /** A dockable panel a plugin adds. See {@link PluginContext.addPanel}. */
   interface PanelDefinition {
-    /** Identifies the panel within its plugin: letters, digits, dots, dashes or underscores. */
+    /**
+     * Identifies the panel within its plugin: letters, digits, dots, dashes or underscores. Panels,
+     * dialogs and Properties sections share ids, so each needs its own.
+     */
     id: string;
     /** The panel's title, also its entry in the Window menu. */
     title: string;
@@ -1713,7 +1871,10 @@ declare namespace modlumi {
 
   /** A dialog a plugin shows. See {@link PluginContext.showDialog}. */
   interface DialogDefinition {
-    /** Identifies the dialog within its plugin; showing the same id again reuses the dialog. */
+    /**
+     * Identifies the dialog within its plugin; showing the same id again reuses the dialog. Panels,
+     * dialogs and Properties sections share ids, so each needs its own.
+     */
     id: string;
     title: string;
     draw: DrawFunction;
@@ -1724,7 +1885,7 @@ declare namespace modlumi {
     height?: number;
     /**
      * Runs when the user closes the dialog with its close button; it may edit the model. Like a
-     * {@link ChangeListener}, it may be async but can't wait for the network or a file dialog.
+     * {@link ChangeListener}, it may be async but can't await the network or a file dialog.
      */
     onClose?(): void | Promise<void>;
   }
@@ -1733,17 +1894,38 @@ declare namespace modlumi {
    * A section a plugin adds to Properties. See {@link PluginContext.addPropertiesSection}.
    */
   interface PropertiesSectionDefinition {
-    /** Identifies the section within its plugin: letters, digits, dots, dashes or underscores. */
+    /**
+     * Identifies the section within its plugin: letters, digits, dots, dashes or underscores. Panels,
+     * dialogs and Properties sections share ids, so each needs its own.
+     */
     id: string;
     /** The section's heading. */
     title: string;
     /**
+     * Whether the section shows for `container`, for plugins whose data describes more than one
+     * kind of object, such as cabinets and worktops. Without it, the section shows for every
+     * container that holds the plugin's data. It only reads, even when the draw that follows may
+     * edit: changing the model, the selection or the tool from it, or from the promise callbacks
+     * and `await`s it starts, even once code that may edit settles their promises, throws
+     * {@link ModelError}. It must return `true` to show the section. Needs the
+     * `"propertiesWhen"` feature.
+     */
+    when?(container: Group | ComponentInstance): boolean;
+    /**
      * Draws the section for `container`, the one selected group or component instance that
      * holds the plugin's data. Like a panel's draw, it only reads, except right after the user
-     * changed a widget: then it may edit the model, for example rebuild `container`.
+     * changed a widget: then it may edit the model, for example rebuild `container`. Rebuilding
+     * on every change of a slider drag is fine: the drag's operations make one undo step; see
+     * {@link Model.operation}.
      */
     draw(ui: Ui, container: Group | ComponentInstance): void;
   }
+
+  /** One value of an attribute dictionary from a .skp file; see {@link PluginContext.skpAttributes}. */
+  type SkpAttributeValue = string | number | boolean | null | readonly SkpAttributeValue[];
+
+  /** A .skp file's attribute dictionaries on one object, by dictionary name and key. */
+  type SkpAttributes = Readonly<Record<string, Readonly<Record<string, SkpAttributeValue>>>>;
 
   /** What {@link EntityData} can hold a value on. */
   type DataHolder = Face | Edge | Group | ComponentInstance | ComponentDefinition | Material;
@@ -1830,6 +2012,31 @@ declare namespace modlumi {
     /** The plugin's version from plugin.json. */
     readonly version: string;
     /**
+     * The user's language, as a BCP 47 tag such as `"fr-FR"` or `"en"`, from the operating
+     * system's settings, for plugins that ship their text in several languages; Modlumi itself is
+     * in English. Needs the `"locale"` feature.
+     */
+    readonly locale: string;
+    /**
+     * How the user's regional settings write numbers. Needs the `"numberFormat"` feature, as do
+     * {@link formatNumber} and {@link formatCsv}.
+     */
+    readonly numberFormat: NumberFormat;
+    /**
+     * Writes a number as the user's regional settings do, such as `"1.234,5"` in Germany. Write
+     * lengths, areas and volumes in the model's units with {@link Model.formatLength} and its
+     * kin instead.
+     */
+    formatNumber(value: number, options?: FormatNumberOptions): string;
+    /**
+     * Writes rows as CSV that the user's spreadsheet opens in columns: fields are separated by
+     * {@link NumberFormat.list}, numbers use the user's decimal mark without digit groups, `null`
+     * and `undefined` are empty, and fields with separators, quotes, line breaks or edge spaces
+     * are quoted. Each row ends in `"\r\n"`. Excel reads accents right when the file starts with
+     * `"\uFEFF"`.
+     */
+    formatCsv(rows: readonly (readonly unknown[])[]): string;
+    /**
      * Adds a command to the plugin's submenu in the Extensions menu. Registering an id
      * again replaces that command.
      */
@@ -1853,6 +2060,12 @@ declare namespace modlumi {
     registerTool(tool: ToolDefinition): PluginTool;
     /** Shows a short message to the user, such as the result of a command. */
     showMessage(text: string): void;
+    /**
+     * Selects the Select tool, ending whichever tool is selected, such as the plugin's own tool
+     * once it has placed what it was for. Like {@link PluginTool.select}, the tool changes once
+     * the plugin's code for this frame has run. Needs the `"toolSelection"` feature.
+     */
+    selectDefaultTool(): void;
     /**
      * Adds a dockable panel, listed in the Window menu, where the user opens and closes it.
      * Panels start closed; Modlumi remembers which ones the user left open and where.
@@ -1934,6 +2147,23 @@ declare namespace modlumi {
     readonly documentData: DocumentData;
     /** The plugin's values stored on faces, edges, groups, component instances, definitions and materials. */
     readonly entityData: EntityData;
+    /**
+     * The attribute dictionaries an imported .skp file had on `holder`, or on the model itself
+     * when `holder` is omitted, or `undefined` when it had none. This is how a plugin recognizes
+     * objects a SketchUp extension made, such as a parametric part keeping its parameters in a
+     * dictionary of its own:
+     *
+     * ```js
+     * const json = context.skpAttributes(container)?.["my_extension"]?.["parameters"];
+     * ```
+     *
+     * Imports keep them on component instances, the model's groups and components included, and
+     * on the model; they are saved with the model and copies keep them. Values keep their
+     * SketchUp types; points and vectors are `[x, y, z]`, and lengths and points stay in inches,
+     * as SketchUp stores them. Plugins can't change them; store converted values with
+     * {@link entityData}. Needs the `"skpAttributes"` feature.
+     */
+    skpAttributes(holder?: DataHolder): SkpAttributes | undefined;
     /**
      * Adds a section to Properties, shown while the selection is one group or component
      * instance holding the plugin's {@link PluginContext.entityData}. This is how a plugin lets
@@ -2219,6 +2449,21 @@ declare namespace modlumi {
 
   /**
    * File dialogs, which need the `"files.dialog"` permission, and the plugin's data folder.
+   *
+   * A command's run can await a dialog: the run finishes while the dialog is up and continues
+   * when the user answers. A panel's or dialog's button starts one without awaiting it, by calling
+   * an async function or with `then`; the rest runs when the user answers, and a failure then
+   * shows as the plugin's message:
+   *
+   * ```js
+   * async function exportCsv() {
+   *   const file = await context.files.save({ name: "parts.csv" });
+   *   file?.writeText(toCsv(parts));
+   * }
+   * context.showDialog({ id: "parts", title: "Parts", draw(ui) {
+   *   if (ui.button("Export CSV")) exportCsv();
+   * } });
+   * ```
    *
    * @example
    * ```js

@@ -184,11 +184,8 @@ function mergeFan(entities) {
   const spokes = entities.ofType("Edge").filter((edge) =>
     Math.abs(edge.start.position.z) < kTolerance && Math.abs(edge.end.position.z) < kTolerance &&
     (isHub(edge.start) || isHub(edge.end)));
+  // Erasing the spokes also removes the hub vertex they leave behind.
   entities.eraseEdges(spokes);
-  const hub = entities.vertices.find(isHub);
-  if (hub) {
-    entities.erase(hub);
-  }
 }
 
 /**
